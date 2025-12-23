@@ -1,4 +1,4 @@
-//const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+// const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 const BACKEND_URL = "http://localhost:3000";
 
 async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -7,7 +7,16 @@ async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T
   const response = await fetch(`${BACKEND_URL}${path}`, {
     ...options,
     headers,
+    credentials: "include", // Session/cookie gönderimi için
   });
+
+  // 401/403 ise, login'e yönlendir
+  if (response.status === 401 || response.status === 403) {
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+    throw new Error("Unauthorized");
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
